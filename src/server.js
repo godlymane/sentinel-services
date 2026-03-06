@@ -70,6 +70,30 @@ let totalRequests = 0;
 let startedAt = null;
 app.use((req, res, next) => { totalRequests++; next(); });
 
+// ============ x402 DISCOVERY (Bazaar + DNS) ============
+app.get('/.well-known/x402.json', (req, res) => {
+  res.json({
+    version: '1.0',
+    name: 'Sentinel Agent Services',
+    description: '4-in-1 agent toolkit: KV Store, Email Relay, PDF Generator, Vector Storage. Pay-per-use with USDC on Base via x402.',
+    url: `https://sentinel-services.onrender.com`,
+    wallet: RECIPIENT,
+    network: 'base',
+    facilitator: facilitatorUrl,
+    endpoints: [
+      { method: 'PUT', path: '/kv/{key}', price: '$0.01', currency: 'USDC', description: 'Write a key-value pair (first 100 free per wallet)', input: { key: 'string (URL param)', value: 'any (JSON body)' }, output: { key: 'string', namespace: 'string', payment: 'object' } },
+      { method: 'GET', path: '/kv/{key}', price: 'free', description: 'Read a key-value pair', input: { key: 'string (URL param)' }, output: { key: 'string', value: 'any', namespace: 'string' } },
+      { method: 'POST', path: '/email/send', price: '$0.005', currency: 'USDC', description: 'Send an email', input: { to: 'string', subject: 'string', body: 'string' }, output: { success: 'boolean', messageId: 'string' } },
+      { method: 'POST', path: '/pdf/generate', price: '$0.02', currency: 'USDC', description: 'Generate a PDF document', input: { title: 'string', content: 'string|array' }, output: 'application/pdf binary' },
+      { method: 'POST', path: '/vectors/{namespace}/upsert', price: '$0.01', currency: 'USDC', description: 'Store a vector embedding', input: { id: 'string', vector: 'number[]', metadata: 'object' }, output: { id: 'string', dimensions: 'number' } },
+      { method: 'POST', path: '/vectors/{namespace}/query', price: '$0.005', currency: 'USDC', description: 'Query vectors by similarity', input: { vector: 'number[]', topK: 'number' }, output: { results: 'array' } },
+      { method: 'POST', path: '/vectors/{namespace}/batch', price: '$0.01', currency: 'USDC', description: 'Batch store vectors', input: { vectors: 'array' }, output: { inserted: 'number' } },
+    ],
+    tags: ['kv-store', 'email', 'pdf', 'vector-db', 'agent-memory', 'agent-tools'],
+    contact: 'https://github.com/godlymane/sentinel-services',
+  });
+});
+
 // ============ HEALTH (no payment) ============
 app.get(['/', '/health'], (req, res) => {
   res.json({
