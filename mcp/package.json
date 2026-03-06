@@ -1,0 +1,28 @@
+{
+  "name": "sentinel-agent-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Sentinel Agent Services — Memory, Email, PDF tools for AI agents with x402 micropayments",
+  "type": "module",
+  "bin": {
+    "sentinel-mcp": "./server.js"
+  },
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-agent",
+    "agent-tools",
+    "x402",
+    "memory",
+    "key-value",
+    "agent-memory",
+    "pdf",
+    "email"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
