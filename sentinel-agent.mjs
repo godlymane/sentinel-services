@@ -155,7 +155,7 @@ async function findOpportunities() {
 }
 
 // ============ MAIN ENGAGEMENT LOOP ============
-async function runEngagement() {
+export async function runEngagement() {
   console.log(`\n=== Sentinel Agent — Smart Engagement Run ===`);
   console.log(`Time: ${new Date().toISOString()}\n`);
 
@@ -277,10 +277,20 @@ async function runEngagement() {
   console.log(`Comments: ${stats.comments} | Upvotes: ${stats.upvotes} | Posts: ${stats.posts} | Follows: ${stats.follows}`);
   console.log(`Gemini cost: $0.00 (free tier)`);
   console.log(`========================\n`);
+
+  return stats;
 }
 
-// ============ RUN ============
-runEngagement().catch(err => {
-  console.error(`[Fatal] ${err.message}`);
-  process.exit(1);
-});
+// ============ RUN (standalone mode) ============
+// Only auto-run if this file is executed directly (not imported)
+const isMain = process.argv[1] && (
+  process.argv[1].endsWith('sentinel-agent.mjs') ||
+  process.argv[1].endsWith('sentinel-agent')
+);
+
+if (isMain) {
+  runEngagement().catch(err => {
+    console.error(`[Fatal] ${err.message}`);
+    process.exit(1);
+  });
+}

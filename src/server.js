@@ -350,6 +350,41 @@ app.get('/vectors/stats/:namespace', (req, res) => {
   res.json(getVectorStats(req.params.namespace));
 });
 
+// ============ AUTONOMOUS AGENT CRON ============
+// Triggered by external cron service (cron-job.org) every 2 hours
+// Runs Moltbook engagement: AI comments, posts, follows, upvotes
+import { runEngagement } from '../sentinel-agent.mjs';
+
+let lastCronRun = null;
+let cronRunning = false;
+
+app.get('/cron/engage', async (req, res) => {
+  const secret = req.query.secret;
+  if (secret !== (process.env.CRON_SECRET || 'sentinel-grind-2026')) {
+    return res.status(401).json({ error: 'Invalid secret' });
+  }
+
+  if (cronRunning) {
+    return res.json({ status: 'already_running', lastRun: lastCronRun });
+  }
+
+  cronRunning = true;
+  res.json({ status: 'started', message: 'Engagement run triggered' });
+
+  try {
+    const stats = await runEngagement();
+    lastCronRun = { time: new Date().toISOString(), stats };
+  } catch (err) {
+    lastCronRun = { time: new Date().toISOString(), error: err.message };
+  } finally {
+    cronRunning = false;
+  }
+});
+
+app.get('/cron/status', (req, res) => {
+  res.json({ cronRunning, lastCronRun });
+});
+
 // ============ 404 ============
 app.use((req, res) => {
   res.status(404).json({
