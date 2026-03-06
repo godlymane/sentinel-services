@@ -1,0 +1,81 @@
+{
+  "$schema": "https://moltspay.com/schemas/services.json",
+  "provider": {
+    "name": "Sentinel Agent Services",
+    "description": "4-in-1 agent toolkit: KV Store, Email Relay, PDF Generator, Vector Storage. Persistent memory and tools for autonomous AI agents.",
+    "wallet": "0xaC20692711b35F3Bb020Ad02651f6eeD68C33fe7",
+    "chain": "base"
+  },
+  "services": [
+    {
+      "id": "kv-write",
+      "name": "KV Store Write",
+      "description": "Write a key-value pair to persistent storage. First 100 writes free per wallet.",
+      "function": "kvWrite",
+      "price": 0.01,
+      "currency": "USDC",
+      "input": { "key": "string", "value": "any" },
+      "output": { "key": "string", "namespace": "string", "written_at": "string" }
+    },
+    {
+      "id": "kv-read",
+      "name": "KV Store Read",
+      "description": "Read a value by key from persistent storage.",
+      "function": "kvRead",
+      "price": 0,
+      "currency": "USDC",
+      "input": { "key": "string" },
+      "output": { "key": "string", "value": "any", "namespace": "string" }
+    },
+    {
+      "id": "email-send",
+      "name": "Email Relay",
+      "description": "Send an email to any address. Supports HTML body.",
+      "function": "emailSend",
+      "price": 0.005,
+      "currency": "USDC",
+      "input": { "to": "string", "subject": "string", "body": "string" },
+      "output": { "success": "boolean", "messageId": "string" }
+    },
+    {
+      "id": "pdf-generate",
+      "name": "PDF Generator",
+      "description": "Generate a PDF document from structured content.",
+      "function": "pdfGenerate",
+      "price": 0.02,
+      "currency": "USDC",
+      "input": { "title": "string", "content": "string|array" },
+      "output": { "pdf_base64": "string", "pages": "number", "size_bytes": "number" }
+    },
+    {
+      "id": "vector-upsert",
+      "name": "Vector Store",
+      "description": "Store a vector embedding with metadata. For RAG, semantic search, agent memory.",
+      "function": "vectorUpsert",
+      "price": 0.01,
+      "currency": "USDC",
+      "input": { "namespace": "string", "id": "string", "vector": "number[]", "metadata": "object" },
+      "output": { "id": "string", "dimensions": "number" }
+    },
+    {
+      "id": "vector-query",
+      "name": "Vector Search",
+      "description": "Query vectors by cosine similarity. Returns top-K nearest neighbors.",
+      "function": "vectorQuery",
+      "price": 0.005,
+      "currency": "USDC",
+      "input": { "namespace": "string", "vector": "number[]", "topK": "number" },
+      "output": { "results": "array" }
+    },
+    {
+      "id": "vector-batch",
+      "name": "Vector Batch Store",
+      "description": "Batch upsert multiple vectors at once.",
+      "function": "vectorBatch",
+      "price": 0.01,
+      "currency": "USDC",
+      "input": { "namespace": "string", "vectors": "array" },
+      "output": { "inserted": "number" }
+    }
+  ]
+}
