@@ -351,8 +351,8 @@ app.get('/vectors/stats/:namespace', (req, res) => {
 });
 
 // ============ AUTONOMOUS AGENT CRON ============
-// Triggered by external cron service (cron-job.org) every 2 hours
-// Runs Moltbook engagement: AI comments, posts, follows, upvotes
+// Self-scheduling: runs automatically every 2 hours via setInterval
+// Also triggerable via /cron/engage?secret=... for manual runs
 import { runEngagement } from '../sentinel-agent.mjs';
 
 let lastCronRun = null;
@@ -416,4 +416,52 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`[Sentinel] PDF:     POST /pdf/generate ($0.02)`);
   console.log(`[Sentinel] Vectors: POST /vectors/:ns/upsert ($0.01), /query ($0.005)`);
   console.log(`[Sentinel] x402 payment: agents pay → facilitator settles → USDC in wallet`);
+
+  // ============ AUTO-CRON: Moltbook engagement every 2 hours ============
+  const CRON_INTERVAL = 2 * 60 * 60 * 1000; // 2 hours in ms
+  const STARTUP_DELAY = 60 * 1000; // Wait 1 min after boot before first run
+
+  if (process.env.GEMINI_API_KEY && process.env.MOLTBOOK_API_KEY) {
+    console.log(`[Sentinel] Auto-cron ENABLED — Moltbook agent will run every 2 hours`);
+
+    // First run after 1 minute (let server stabilize)
+    setTimeout(async () => {
+      console.log(`[Sentinel] Starting first auto-engagement run...`);
+      if (!cronRunning) {
+        cronRunning = true;
+        try {
+          const stats = await runEngagement();
+          lastCronRun = { time: new Date().toISOString(), stats, trigger: 'auto-startup' };
+          console.log(`[Sentinel] First auto-run complete:`, stats);
+        } catch (err) {
+          lastCronRun = { time: new Date().toISOString(), error: err.message, trigger: 'auto-startup' };
+          console.error(`[Sentinel] First auto-run failed:`, err.message);
+        } finally {
+          cronRunning = false;
+        }
+      }
+    }, STARTUP_DELAY);
+
+    // Then repeat every 2 hours
+    setInterval(async () => {
+      console.log(`[Sentinel] Auto-cron triggered — starting engagement run...`);
+      if (cronRunning) {
+        console.log(`[Sentinel] Skipping — previous run still in progress`);
+        return;
+      }
+      cronRunning = true;
+      try {
+        const stats = await runEngagement();
+        lastCronRun = { time: new Date().toISOString(), stats, trigger: 'auto-interval' };
+        console.log(`[Sentinel] Auto-run complete:`, stats);
+      } catch (err) {
+        lastCronRun = { time: new Date().toISOString(), error: err.message, trigger: 'auto-interval' };
+        console.error(`[Sentinel] Auto-run failed:`, err.message);
+      } finally {
+        cronRunning = false;
+      }
+    }, CRON_INTERVAL);
+  } else {
+    console.log(`[Sentinel] Auto-cron DISABLED — missing GEMINI_API_KEY or MOLTBOOK_API_KEY`);
+  }
 });
